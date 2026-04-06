@@ -6,5 +6,4 @@ metadata:
 spec:
   containers:
     - name: debug
-      image: chelloju/debug:1.0
-      command: ["sleep", "2000"]    # keeps pod alive
+      image: chelloju/debug:2.0
