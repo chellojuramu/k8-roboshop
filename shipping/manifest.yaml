@@ -1,45 +1,43 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: catalogue
+  name: shipping
   namespace: roboshop
   labels:
     project: roboshop
     tier: backend
-    component: catalogue
+    component: shipping
 data:
-  MONGO: "true"
-  MONGO_URL: "mongodb://mongodb:27017/catalogue"
+  CART_ENDPOINT: "cart:8080"
+  DB_HOST: "mysql"
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: catalogue
+  name: shipping
   namespace: roboshop
-  # these labels are replicaset labels
   labels:
     project: roboshop
     tier: backend
-    component: catalogue
+    component: shipping
 spec:
   replicas: 1
   selector:
-    # using these labels replica set selects the pod
     matchLabels:
       project: roboshop
       tier: backend
-      component: catalogue
-  # This is pod definition, pod is subset of replicaset
+      component: shipping
   template:
     metadata:
       labels:
         project: roboshop
         tier: backend
-        component: catalogue
+        component: shipping
     spec:
       containers:
-        - name: catalogue
-          image: chelloju/roboshop-catalogue:2.0
+        - name: shipping
+          image: chelloju/roboshop-shipping:2.0
           imagePullPolicy: Always
           resources:
             requests:
@@ -50,7 +48,13 @@ spec:
               memory: "128Mi"
           envFrom:
             - configMapRef:
-                name: catalogue
+                name: shipping
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            failureThreshold: 20
+            periodSeconds: 10
           readinessProbe:
             tcpSocket:
               port: 8080
@@ -63,24 +67,23 @@ spec:
               port: 8080
             periodSeconds: 10
             failureThreshold: 2
-
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: catalogue
-  namespace: roboshop
-  labels:
-    project: roboshop
-    tier: backend
-    component: catalogue
+    name: shipping
+    namespace: roboshop
+    labels:
+        project: roboshop
+        tier: backend
+        component: shipping
 spec:
-  selector:
-    # labels are used as selectors
-    project: roboshop
-    tier: backend
-    component: catalogue
-  ports:
-    - protocol: TCP
-      port: 8080 # servie port
-      targetPort: 8080 # container port
+    selector:
+        project: roboshop
+        tier: backend
+        component: shipping
+    ports:
+        - protocol: TCP
+          port: 8080
+          targetPort: 8080

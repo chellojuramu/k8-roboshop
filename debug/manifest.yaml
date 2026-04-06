@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug
+  namespace: roboshop
+spec:
+  containers:
+    - name: debug
+      image: chelloju/debug:1.0
+      command: ["sleep", "2000"]    # keeps pod alive
